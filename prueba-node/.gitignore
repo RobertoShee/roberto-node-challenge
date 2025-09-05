@@ -1,0 +1,98 @@
+# 🚫 Git Ignore File
+# Archivos y directorios que NO deben ser versionados
+
+# 📦 Dependencias
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# 🏗️ Archivos de construcción
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# 🧪 Testing y cobertura
+coverage/
+.nyc_output/
+test-results/
+junit.xml
+.jest/
+
+# 🗄️ Base de datos local
+database.sqlite
+database.sqlite.backup.*
+*.db
+*.sqlite3
+
+# 🔧 Variables de entorno
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 📊 Logs
+logs/
+*.log
+lerna-debug.log*
+
+# 💾 Archivos temporales del runtime
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# 🔍 Directorios de herramientas
+.sonarqube/
+.scannerwork/
+
+# 📱 IDEs y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# 🖥️ Sistema operativo
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# 🐳 Docker
+.dockerignore
+docker-compose.override.yml
+
+# 📈 Archivos de performance
+.cache/
+.parcel-cache/
+
+# 🗂️ Respaldos
+*.bak
+*.backup
+*.old
+*.orig
+
+# 🔒 Certificados y llaves
+*.pem
+*.key
+*.crt
+*.p12
+
+# 📋 Reportes
+reports/
+.lighthouse/
+
+# 🎯 Archivos específicos del proyecto
+.env.example

@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>API Gestión de Tareas - Demo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input, textarea, select, button {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .task-item {
+        background: #f8f9fa;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 4px;
+        border-left: 4px solid #007bff;
+      }
+      .task-item.completada {
+        border-left-color: #28a745;
+      }
+      .task-item.cancelada {
+        border-left-color: #dc3545;
+      }
+      .status {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        color: white;
+      }
+      .status.pendiente { background-color: #ffc107; color: black; }
+      .status.completada { background-color: #28a745; }
+      .status.cancelada { background-color: #dc3545; }
+      .log {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 20px;
+        max-height: 200px;
+        overflow-y: auto;
+        font-family: monospace;
+        font-size: 12px;
+      }
+      .log-entry {
+        margin: 2px 0;
+        padding: 2px;
+      }
+      .actions {
+        margin-top: 10px;
+      }
+      .actions button {
+        width: auto;
+        margin-right: 5px;
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🚀 API de Gestión de Tareas</h1>
+      <p><strong>Demo en tiempo real con WebSockets</strong></p>
+      
+      <!-- Formulario para crear tarea -->
+      <div class="form-group">
+        <h3>➕ Crear Nueva Tarea</h3>
+        <label for="titulo">Título:</label>
+        <input type="text" id="titulo" placeholder="Ingresa el título de la tarea" maxlength="100">
+        
+        <label for="descripcion">Descripción (opcional):</label>
+        <textarea id="descripcion" placeholder="Descripción de la tarea" maxlength="500"></textarea>
+        
+        <button onclick="createTask()">Crear Tarea</button>
+      </div>
+
+      <!-- Lista de tareas -->
+      <div>
+        <h3>📋 Lista de Tareas</h3>
+        <button onclick="loadTasks()">🔄 Actualizar Lista</button>
+        <div id="tasks-list"></div>
+      </div>
+
+      <!-- Log de eventos WebSocket -->
+      <div>
+        <h3>🔌 Log de Eventos WebSocket</h3>
+        <div id="log" class="log"></div>
+      </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script>
+      // Configuración de Socket.IO
+      const socket = io();
+      let tasks = [];
+
+      // Funciones de logging
+      function log(message, type = 'info') {
+        const logDiv = document.getElementById('log');
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `<span style="color: #666">[${new Date().toLocaleTimeString()}]</span> ${message}`;
+        logDiv.appendChild(entry);
+        logDiv.scrollTop = logDiv.scrollHeight;
+      }
+
+      // Eventos de Socket.IO
+      socket.on('connect', () => {
+        log('✅ Conectado al servidor WebSocket (ID: ' + socket.id + ')', 'success');
+        loadTasks(); // Cargar tareas al conectar
+      });
+
+      socket.on('disconnect', () => {
+        log('❌ Desconectado del servidor', 'error');
+      });
+
+      socket.on('newTask', (task) => {
+        log(`🆕 Nueva tarea creada: "${task.titulo}" (ID: ${task.id})`, 'info');
+        tasks.unshift(task);
+        renderTasks();
+      });
+
+      socket.on('taskUpdated', (data) => {
+        log(`🔄 Tarea actualizada: ID ${data.id} → Estado: ${data.status}`, 'info');
+        const taskIndex = tasks.findIndex(t => t.id === data.id);
+        if (taskIndex !== -1) {
+          tasks[taskIndex].status = data.status;
+          renderTasks();
+        }
+      });
+
+      socket.on('taskDeleted', (data) => {
+        log(`🗑️ Tarea eliminada: ID ${data.id}`, 'warning');
+        tasks = tasks.filter(t => t.id !== data.id);
+        renderTasks();
+      });
+
+      // Funciones de API
+      async function createTask() {
+        const titulo = document.getElementById('titulo').value.trim();
+        const descripcion = document.getElementById('descripcion').value.trim();
+
+        if (!titulo) {
+          alert('El título es obligatorio');
+          return;
+        }
+
+        try {
+          const response = await fetch('/tasks', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              titulo,
+              descripcion: descripcion || null,
+            }),
+          });
+
+          if (response.ok) {
+            document.getElementById('titulo').value = '';
+            document.getElementById('descripcion').value = '';
+            log(`✅ Tarea "${titulo}" creada exitosamente`, 'success');
+          } else {
+            const error = await response.json();
+            log(`❌ Error al crear tarea: ${error.detail}`, 'error');
+          }
+        } catch (error) {
+          log(`❌ Error de conexión: ${error.message}`, 'error');
+        }
+      }
+
+      async function loadTasks() {
+        try {
+          const response = await fetch('/tasks');
+          if (response.ok) {
+            tasks = await response.json();
+            renderTasks();
+            log(`📋 ${tasks.length} tareas cargadas`, 'info');
+          } else {
+            log('❌ Error al cargar tareas', 'error');
+          }
+        } catch (error) {
+          log(`❌ Error de conexión: ${error.message}`, 'error');
+        }
+      }
+
+      async function updateTaskStatus(id, status) {
+        try {
+          const response = await fetch(`/tasks/${id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status }),
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            log(`❌ Error al actualizar tarea: ${error.detail}`, 'error');
+          }
+        } catch (error) {
+          log(`❌ Error de conexión: ${error.message}`, 'error');
+        }
+      }
+
+      async function deleteTask(id) {
+        if (!confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/tasks/${id}`, {
+            method: 'DELETE',
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            log(`❌ Error al eliminar tarea: ${error.detail}`, 'error');
+          }
+        } catch (error) {
+          log(`❌ Error de conexión: ${error.message}`, 'error');
+        }
+      }
+
+      function renderTasks() {
+        const tasksDiv = document.getElementById('tasks-list');
+        
+        if (tasks.length === 0) {
+          tasksDiv.innerHTML = '<p style="text-align: center; color: #666;">No hay tareas disponibles</p>';
+          return;
+        }
+
+        tasksDiv.innerHTML = tasks.map(task => `
+          <div class="task-item ${task.status}">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+              <div style="flex: 1;">
+                <h4 style="margin: 0 0 5px 0;">${task.titulo}</h4>
+                ${task.descripcion ? `<p style="margin: 5px 0; color: #666;">${task.descripcion}</p>` : ''}
+                <small style="color: #888;">
+                  Creada: ${new Date(task.fechaCreacion).toLocaleString()}
+                  ${task.fechaActualizacion !== task.fechaCreacion ? 
+                    `| Actualizada: ${new Date(task.fechaActualizacion).toLocaleString()}` : ''}
+                </small>
+              </div>
+              <div>
+                <span class="status ${task.status}">${task.status}</span>
+              </div>
+            </div>
+            <div class="actions">
+              ${task.status === 'pendiente' ? 
+                `<button onclick="updateTaskStatus(${task.id}, 'completada')">✅ Completar</button>
+                 <button onclick="updateTaskStatus(${task.id}, 'cancelada')">❌ Cancelar</button>` : ''}
+              ${task.status === 'completada' ? 
+                `<button onclick="updateTaskStatus(${task.id}, 'pendiente')">🔄 Marcar Pendiente</button>` : ''}
+              ${task.status === 'cancelada' ? 
+                `<button onclick="updateTaskStatus(${task.id}, 'pendiente')">🔄 Marcar Pendiente</button>` : ''}
+              <button onclick="deleteTask(${task.id})" style="background-color: #dc3545;">🗑️ Eliminar</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Permitir crear tarea con Enter
+      document.getElementById('titulo').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          createTask();
+        }
+      });
+
+      // Log inicial
+      log('🚀 Aplicación iniciada. Conectando al servidor...', 'info');
+    </script>
+  </body>
+</html>

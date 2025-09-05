@@ -1,0 +1,59 @@
+{
+  "preset": "ts-jest",
+  "roots": ["<rootDir>/tests"],
+  "testMatch": [
+    "**/__tests__/**/*.ts",
+    "**/?(*.)+(spec|test).ts"
+  ],
+  "moduleFileExtensions": ["ts", "js", "json", "node"],
+  "testEnvironment": "node",
+  "transform": {
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        "tsconfig": "tsconfig.jest.json",
+        "useESM": false,
+        "diagnostics": {
+          "ignoreCodes": [
+            "TS2451",
+            "TS2304",
+            "TS2339",
+            "TS2740",
+            "TS2322",
+            "TS2345",
+            "TS2532",
+            "TS2769",
+            "TS7006"
+          ]
+        }
+      }
+    ]
+  },
+  "collectCoverageFrom": [
+    "src/**/*.ts",
+    "!src/**/*.d.ts",
+    "!src/**/index.ts",
+    "!src/test-*.ts",
+    "!src/**/*.spec.ts",
+    "!src/**/*.test.ts"
+  ],
+  "coverageDirectory": "coverage",
+  "coverageReporters": ["text"],
+  "coverageThreshold": {
+    "global": {
+      "branches": 30,
+      "functions": 30,
+      "lines": 30,
+      "statements": 30
+    }
+  },
+  "setupFilesAfterEnv": ["<rootDir>/tests/setup.ts"],
+  "testTimeout": 30000,
+  "verbose": false,
+  "forceExit": true,
+  "detectOpenHandles": true,
+  "clearMocks": true,
+  "resetMocks": true,
+  "restoreMocks": true,
+  "reporters": ["default"]
+}

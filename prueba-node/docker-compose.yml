@@ -1,0 +1,73 @@
+# 🐳 Docker Compose para desarrollo y testing
+---
+services:
+  # 🚀 Aplicación principal
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: task-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_PATH=/app/data/database.sqlite
+      - LOG_LEVEL=info
+    volumes:
+      - app_data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 🔧 Desarrollo con hot reload
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: task-api-dev
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DB_PATH=/app/database.sqlite
+      - LOG_LEVEL=debug
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: yarn dev
+    profiles:
+      - dev
+
+  # 🧪 Testing
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: task-api-test
+    environment:
+      - NODE_ENV=test
+      - DB_PATH=:memory:
+      - LOG_LEVEL=error
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: yarn test:coverage
+    profiles:
+      - test
+
+volumes:
+  app_data:
+    driver: local
+
+networks:
+  default:
+    name: task-api-network

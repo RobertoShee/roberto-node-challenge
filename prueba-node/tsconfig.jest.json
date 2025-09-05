@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "lib": ["es6", "dom"],
+    "esModuleInterop": true,
+    "allowJs": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "sourceMap": true,
+    "types": ["jest", "node"],
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "strict": false
+  }
+  ,
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
+}
