@@ -5,17 +5,14 @@ import { getTasks, createTask, updateTask, deleteTask } from '../handlers/task.h
 
 export const taskRouter = Router();
 
-// GET /tasks - Obtener todas las tareas
 taskRouter.get('/', getTasks);
 
-// POST /tasks - Crear una nueva tarea
 taskRouter.post(
   '/',
   validateDto(CreateTaskDto, 'body'),
   createTask
 );
 
-// PUT /tasks/:id - Actualizar el estado de una tarea
 taskRouter.put(
   '/:id',
   validateDto(TaskParamsDto, 'params'),
@@ -23,7 +20,6 @@ taskRouter.put(
   updateTask
 );
 
-// DELETE /tasks/:id - Eliminar una tarea
 taskRouter.delete(
   '/:id',
   validateDto(TaskParamsDto, 'params'),

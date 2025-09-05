@@ -4,23 +4,19 @@ import { TaskService } from '../../src/modules/tasks/task.service';
 import { Request, Response, NextFunction } from 'express';
 import { Task } from '../../src/modules/tasks/task.entity';
 
-// Mock the task service
 jest.mock('../../src/modules/tasks/task.service');
 
-// Mock lodash decorators
 jest.mock('lodash-decorators', () => ({
   debounce: () => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => descriptor,
   throttle: () => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => descriptor
 }));
 
-// Mock WebSocket emitters
 jest.mock('../../src/modules/tasks/task.ws', () => ({
   emitNewTask: jest.fn(),
   emitTaskUpdated: jest.fn(),
   emitTaskDeleted: jest.fn()
 }));
 
-// Mock logger
 jest.mock('../../src/common/logger', () => ({
   logger: {
     info: jest.fn(),

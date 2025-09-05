@@ -1,4 +1,3 @@
-// Test router configuration and routes
 describe('Task Routes', () => {
   it('should load task routes module without errors', () => {
     expect(() => require('../../src/modules/tasks/routes')).not.toThrow();

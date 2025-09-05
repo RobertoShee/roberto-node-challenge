@@ -2,14 +2,12 @@ import { IsString, IsOptional, Length, IsEnum, IsNotEmpty, IsDateString, IsNumbe
 import { Transform, Expose } from 'class-transformer';
 import { OmitType, PickType, PickTypeClass } from '../../../common/types';
 
-// Enum separado para no exponer la entidad
 export enum TaskStatusEnum {
   PENDIENTE = 'pendiente',
   COMPLETADA = 'completada',
   CANCELADA = 'cancelada'
 }
 
-// DTO Base para Task (sin exponer la entidad)
 export class TaskBaseDto {
   @IsNumber()
   @Expose()
@@ -44,7 +42,6 @@ export class TaskBaseDto {
   fechaActualizacion!: string;
 }
 
-// DTO para crear tareas (solo campos necesarios)
 export class CreateTaskDto {
   @IsString()
   @IsNotEmpty()
@@ -59,10 +56,8 @@ export class CreateTaskDto {
   descripcion?: string | null;
 }
 
-// DTO para actualizar estado usando nuestro utility type
 export type UpdateTaskStatusDto = PickType<TaskBaseDto, 'status'>;
 
-// Implementación concreta de UpdateTaskStatusDto
 export class UpdateTaskStatusDtoClass implements UpdateTaskStatusDto {
   @IsEnum(TaskStatusEnum, {
     message: 'El status debe ser: pendiente, completada o cancelada'
@@ -70,7 +65,6 @@ export class UpdateTaskStatusDtoClass implements UpdateTaskStatusDto {
   status!: TaskStatusEnum;
 }
 
-// DTO para parámetros de ruta
 export class TaskParamsDto {
   @Transform(({ value }) => parseInt(value))
   @IsNotEmpty()
@@ -78,13 +72,10 @@ export class TaskParamsDto {
   id!: number;
 }
 
-// DTO de respuesta pública (sin campos sensibles)
-export type TaskResponseDto = OmitType<TaskBaseDto, never>; // Por ahora no omitimos nada, pero podríamos omitir campos internos
+export type TaskResponseDto = OmitType<TaskBaseDto, never>;
 
-// DTO para listado (podría omitir descripción para mejor performance)
 export type TaskListItemDto = OmitType<TaskBaseDto, 'descripcion'>;
 
-// Implementación concreta para TaskListItemDto
 export class TaskListItemDtoClass implements TaskListItemDto {
   @IsNumber()
   @Expose()

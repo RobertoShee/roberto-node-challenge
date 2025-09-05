@@ -1,7 +1,3 @@
-/**
- * Test unitario para TaskMapper
- */
-
 import { TaskMapper } from '../../src/modules/tasks/mappers/task.mapper';
 import { Task } from '../../src/modules/tasks/task.entity';
 import { CreateTaskDto, TaskStatusEnum } from '../../src/modules/tasks/dto/task.dto';
@@ -9,7 +5,6 @@ import { CreateTaskDto, TaskStatusEnum } from '../../src/modules/tasks/dto/task.
 describe('TaskMapper', () => {
   describe('toResponseDto', () => {
     it('should convert Task entity to response DTO correctly', () => {
-      // Arrange
       const task: Task = {
         id: 1,
         titulo: 'Test Task',
@@ -19,10 +14,8 @@ describe('TaskMapper', () => {
         fechaActualizacion: new Date('2025-09-03T00:00:00.000Z')
       };
 
-      // Act
       const result = TaskMapper.toResponseDto(task);
 
-      // Assert
       expect(result).toEqual({
         id: 1,
         titulo: 'Test Task',
@@ -34,7 +27,6 @@ describe('TaskMapper', () => {
     });
 
     it('should keep null description in response', () => {
-      // Arrange
       const task: Task = {
         id: 1,
         titulo: 'Test Task',
@@ -44,10 +36,8 @@ describe('TaskMapper', () => {
         fechaActualizacion: new Date('2025-09-03T00:00:00.000Z')
       };
 
-      // Act
       const result = TaskMapper.toResponseDto(task);
 
-      // Assert
       expect(result.descripcion).toBeNull();
       expect(result.status).toBe(TaskStatusEnum.COMPLETADA);
     });
@@ -55,16 +45,13 @@ describe('TaskMapper', () => {
 
   describe('fromCreateDto', () => {
     it('should convert CreateTaskDto to entity data correctly', () => {
-      // Arrange
       const createDto: CreateTaskDto = {
         titulo: 'New Task',
         descripcion: 'New Description'
       };
 
-      // Act
       const result = TaskMapper.fromCreateDto(createDto);
 
-      // Assert
       expect(result).toEqual({
         titulo: 'New Task',
         descripcion: 'New Description'
@@ -72,15 +59,12 @@ describe('TaskMapper', () => {
     });
 
     it('should set null when description is undefined', () => {
-      // Arrange
       const createDto: CreateTaskDto = {
         titulo: 'New Task'
       };
 
-      // Act
       const result = TaskMapper.fromCreateDto(createDto);
 
-      // Assert
       expect(result.titulo).toBe('New Task');
       expect(result.descripcion).toBeNull();
     });

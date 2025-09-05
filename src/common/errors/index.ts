@@ -1,12 +1,5 @@
-/**
- * Clases de error personalizadas para la aplicación
- */
-
 import { StatusCodes } from 'http-status-codes';
 
-/**
- * Error base de la aplicación
- */
 export abstract class AppError extends Error {
   abstract readonly statusCode: number;
   abstract readonly type: string;
@@ -21,15 +14,11 @@ export abstract class AppError extends Error {
     super(message);
     this.name = this.constructor.name;
     
-    // Capturar stack trace (V8 específico)
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);
     }
   }
 
-  /**
-   * Convierte el error a formato RFC 7807
-   */
   toJSON() {
     return {
       type: this.type,
@@ -42,9 +31,6 @@ export abstract class AppError extends Error {
   }
 }
 
-/**
- * Error de validación (400 Bad Request)
- */
 export class ValidationError extends AppError {
   readonly statusCode = StatusCodes.BAD_REQUEST;
   readonly type = 'https://httpstatuses.com/400';
@@ -66,9 +52,6 @@ export class ValidationError extends AppError {
   }
 }
 
-/**
- * Error de recurso no encontrado (404 Not Found)
- */
 export class NotFoundError extends AppError {
   readonly statusCode = StatusCodes.NOT_FOUND;
   readonly type = 'https://httpstatuses.com/404';
@@ -82,9 +65,6 @@ export class NotFoundError extends AppError {
   }
 }
 
-/**
- * Error de conflicto (409 Conflict)
- */
 export class ConflictError extends AppError {
   readonly statusCode = StatusCodes.CONFLICT;
   readonly type = 'https://httpstatuses.com/409';
@@ -95,9 +75,6 @@ export class ConflictError extends AppError {
   }
 }
 
-/**
- * Error de autorización (401 Unauthorized)
- */
 export class UnauthorizedError extends AppError {
   readonly statusCode = StatusCodes.UNAUTHORIZED;
   readonly type = 'https://httpstatuses.com/401';
@@ -108,9 +85,6 @@ export class UnauthorizedError extends AppError {
   }
 }
 
-/**
- * Error de permisos (403 Forbidden)
- */
 export class ForbiddenError extends AppError {
   readonly statusCode = StatusCodes.FORBIDDEN;
   readonly type = 'https://httpstatuses.com/403';
@@ -121,9 +95,6 @@ export class ForbiddenError extends AppError {
   }
 }
 
-/**
- * Error de base de datos
- */
 export class DatabaseError extends AppError {
   readonly statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
   readonly type = 'https://httpstatuses.com/500';
@@ -141,9 +112,6 @@ export class DatabaseError extends AppError {
   }
 }
 
-/**
- * Error de servidor interno
- */
 export class InternalServerError extends AppError {
   readonly statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
   readonly type = 'about:blank';
@@ -154,16 +122,10 @@ export class InternalServerError extends AppError {
   }
 }
 
-/**
- * Función helper para verificar si un error es operacional
- */
 export function isOperationalError(error: Error): boolean {
   return error instanceof AppError && error.isOperational;
 }
 
-/**
- * Función helper para crear errores de validación desde class-validator
- */
 export function createValidationError(
   validationErrors: any[]
 ): ValidationError {

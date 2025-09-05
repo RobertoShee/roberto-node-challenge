@@ -3,16 +3,12 @@ import { StatusCodes } from 'http-status-codes';
 import { AppError, InternalServerError, isOperationalError } from '../common/errors';
 import { logger } from '../common/logger';
 
-/**
- * Middleware global para manejo de errores
- */
 export function errorHandler(
   err: Error,
   req: Request,
   res: Response,
   _next: NextFunction
 ): void {
-  // Log del error con contexto de la request
   const requestContext = {
     method: req.method,
     url: req.originalUrl,
@@ -23,7 +19,6 @@ export function errorHandler(
     ...(req.query && Object.keys(req.query).length > 0 && { query: req.query })
   };
 
-  // Si es un error operacional conocido
   if (err instanceof AppError) {
     logger.warn(`Operational error: ${err.message}`, {
       ...requestContext,
@@ -35,10 +30,8 @@ export function errorHandler(
     return;
   }
 
-  // Si es un error no operacional o desconocido
   logger.error(`Unexpected error: ${err.message}`, err, requestContext);
 
-  // Para errores no operacionales, no exponer detalles internos
   const internalError = new InternalServerError(
     process.env.NODE_ENV === 'production' 
       ? 'Ha ocurrido un error interno del servidor'
@@ -48,9 +41,6 @@ export function errorHandler(
   res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(internalError.toJSON());
 }
 
-/**
- * Middleware para manejar rutas no encontradas (404)
- */
 export function notFoundHandler(req: Request, res: Response): void {
   const context = {
     method: req.method,
@@ -70,13 +60,9 @@ export function notFoundHandler(req: Request, res: Response): void {
   });
 }
 
-/**
- * Middleware para logging de requests
- */
 export function requestLogger(req: Request, res: Response, next: NextFunction): void {
   const startTime = Date.now();
 
-  // Escuchar el evento 'finish' para capturar el tiempo de respuesta
   res.on('finish', () => {
     const responseTime = Date.now() - startTime;
     

@@ -9,7 +9,6 @@ jest.mock('../../src/config/data-source', () => ({
   }
 }));
 
-// Mock del logger para evitar handles abiertos
 jest.mock('../../src/common/logger', () => ({
   logger: {
     database: jest.fn(),
